@@ -27,6 +27,9 @@ typedef enum InvaderType {
 #define kShipSize CGSizeMake(30, 16)
 #define kShipName @"ship"
 
+#define kScoreHudName @"scoreHud"
+#define kHealthHudName @"healthHud"
+
 #pragma mark - Private GameScene Properties
 
 @interface GameScene ()
@@ -56,6 +59,7 @@ typedef enum InvaderType {
     
     [self setupInvader];
     [self setupShip];
+    [self setupHud];
 }
 
 -(SKNode*)makeInvaderOfType:(InvaderType)invaderType {
@@ -110,6 +114,24 @@ typedef enum InvaderType {
     SKNode *ship = [SKSpriteNode spriteNodeWithColor:[SKColor greenColor] size:kShipSize];
     ship.name = kShipName;
     return ship;
+}
+
+- (void)setupHud {
+    SKLabelNode *scoreLabel = [SKLabelNode labelNodeWithFontNamed:@"Courier"];
+    scoreLabel.name = kScoreHudName;
+    scoreLabel.fontSize = 15;
+    scoreLabel.fontColor = [SKColor greenColor];
+    scoreLabel.text = [NSString stringWithFormat:@"Score: %04u", 0];
+    scoreLabel.position = CGPointMake(20 + scoreLabel.frame.size.width / 2, self.size.height - (20 + scoreLabel.frame.size.height / 2));
+    [self addChild:scoreLabel];
+    
+    SKLabelNode *healthLabel = [SKLabelNode labelNodeWithFontNamed:@"Courier"];
+    healthLabel.name = kHealthHudName;
+    healthLabel.fontSize = 15;
+    healthLabel.fontColor = [SKColor redColor];
+    healthLabel.text = [NSString stringWithFormat:@"Health: %.1f%%", 100.0f];
+    healthLabel.position = CGPointMake(self.size.width - healthLabel.frame.size.width / 2 - 20, self.size.height - (20 + healthLabel.frame.size.height / 2));
+    [self addChild:healthLabel];
 }
 
 #pragma mark - Scene Update
