@@ -17,6 +17,14 @@ typedef enum InvaderType {
     InvaderTypeC
 } InvaderType;
 
+typedef enum InvaderMovementDirection {
+    InvaderMovementDirectionRight,
+    InvaderMovementDirectionLeft,
+    InvaderMovementDirectionDownThenRight,
+    InvaderMovementDirectionDownThenLeft,
+    InvaderMovementDirectionNone
+} InvaderMovementDirection;
+
 #define kInvaderSize CGSizeMake(24, 16)
 #define kInvaderGridSpacing CGSizeMake(12, 12)
 #define kInvaderRowCount 6
@@ -34,6 +42,9 @@ typedef enum InvaderType {
 
 @interface GameScene ()
 @property BOOL contentCreated;
+@property InvaderMovementDirection invaderMovementDirection;
+@property NSTimeInterval timeOfLastMove;
+@property NSTimeInterval timePerMove;
 @end
 
 
@@ -56,6 +67,10 @@ typedef enum InvaderType {
 //    SKSpriteNode* invader = [SKSpriteNode spriteNodeWithImageNamed:@"InvaderA_00.png"];
 //    invader.position = CGPointMake(self.size.width/2, self.size.height/2);
 //    [self addChild:invader];
+    
+    self.invaderMovementDirection = InvaderMovementDirectionRight;
+    self.timePerMove = 1.0;
+    self.timeOfLastMove = 0.0;
     
     [self setupInvader];
     [self setupShip];
@@ -136,11 +151,35 @@ typedef enum InvaderType {
 
 #pragma mark - Scene Update
 
-- (void)update:(NSTimeInterval)currentTime
-{
+- (void)update:(NSTimeInterval)currentTime {
+    [self moveInvadersForUpdate:currentTime];
 }
 
 #pragma mark - Scene Update Helpers
+
+- (void)moveInvadersForUpdate:(NSTimeInterval)currentTime {
+    if (currentTime - self.timeOfLastMove < self.timePerMove) return;
+    
+    [self enumerateChildNodesWithName:kInvaderName usingBlock:^(SKNode *node, BOOL *stop) {
+        switch (self.invaderMovementDirection) {
+            case InvaderMovementDirectionRight:
+                node.position = CGPointMake(node.position.x + 10, node.position.y);
+                break;
+            case InvaderMovementDirectionLeft:
+                node.position = CGPointMake(node.position.x - 10, node.position.y);
+                break;
+            case InvaderMovementDirectionDownThenLeft:
+            case InvaderMovementDirectionDownThenRight:
+                node.position = CGPointMake(node.position.x, node.position.y - 10);
+                break;
+            case InvaderMovementDirectionNone:
+            default:
+                break;
+        }
+    }];
+    
+    self.timeOfLastMove = currentTime;
+}
 
 #pragma mark - Invader Movement Helpers
 
