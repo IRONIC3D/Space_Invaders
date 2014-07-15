@@ -160,6 +160,8 @@ typedef enum InvaderMovementDirection {
 - (void)moveInvadersForUpdate:(NSTimeInterval)currentTime {
     if (currentTime - self.timeOfLastMove < self.timePerMove) return;
     
+    [self determineInvaderMovementDirection];
+    
     [self enumerateChildNodesWithName:kInvaderName usingBlock:^(SKNode *node, BOOL *stop) {
         switch (self.invaderMovementDirection) {
             case InvaderMovementDirectionRight:
@@ -182,6 +184,41 @@ typedef enum InvaderMovementDirection {
 }
 
 #pragma mark - Invader Movement Helpers
+
+- (void)determineInvaderMovementDirection {
+    __block InvaderMovementDirection proposedMovementDirection = self.invaderMovementDirection;
+    
+    [self enumerateChildNodesWithName:kInvaderName usingBlock:^(SKNode *node, BOOL *stop) {
+        switch (self.invaderMovementDirection) {
+            case InvaderMovementDirectionRight:
+                if(CGRectGetMaxX(node.frame) >= node.scene.size.width - 1.0f) {
+                    proposedMovementDirection = InvaderMovementDirectionDownThenLeft;
+                    *stop = YES;
+                }
+                break;
+            case InvaderMovementDirectionLeft:
+                if(CGRectGetMinX(node.frame) <= 1.0f) {
+                    proposedMovementDirection = InvaderMovementDirectionDownThenRight;
+                    *stop = YES;
+                }
+                break;
+            case InvaderMovementDirectionDownThenLeft:
+                proposedMovementDirection = InvaderMovementDirectionLeft;
+                *stop = YES;
+                break;
+            case InvaderMovementDirectionDownThenRight:
+                proposedMovementDirection = InvaderMovementDirectionRight;
+                *stop = YES;
+                break;
+            default:
+                break;
+        }
+    }];
+    
+    if(proposedMovementDirection != self.invaderMovementDirection) {
+        self.invaderMovementDirection = proposedMovementDirection;
+    }
+}
 
 #pragma mark - Bullet Helpers
 
